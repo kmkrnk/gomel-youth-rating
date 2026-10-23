@@ -40,24 +40,21 @@ function Index() {
     if (a === b) return fmtD(a);
     return a.slice(5, 7) === b.slice(5, 7) ? `${a.slice(8, 10)}-${fmtD(b)}` : `${fmtD(a)}-${fmtD(b)}`;
   };
-  const head = (
-    <thead>
-      <tr className={stripe++ % 2 ? "odd" : ""}>
-        <th>№</th>
-        <th>Прозвішча, Імя</th>
-        <th>ГН</th>
-        {held.map((s) => (
-          <th key={s.id} title={`${s.title}${s.dist ? ", " + s.dist.toLowerCase() : ""}`}>
-            {s.date ? fmtD(s.date) : s.id}
-          </th>
-        ))}
-        <th>Ачкі</th>
-        <th>Сярэдняе</th>
-        <th>Месца</th>
-      </tr>
-    </thead>
+  const headCells = (
+    <>
+      <th>№</th>
+      <th>Прозвішча, Імя</th>
+      <th>ГН</th>
+      {held.map((s) => (
+        <th key={s.id} title={`${s.title}${s.dist ? ", " + s.dist.toLowerCase() : ""}`}>
+          {s.date ? fmtD(s.date) : s.id}
+        </th>
+      ))}
+      <th>Ачкі</th>
+      <th>Сярэдняе</th>
+      <th>Месца</th>
+    </>
   );
-  stripe = 0;
 
   return (
     <div className="wrap">
