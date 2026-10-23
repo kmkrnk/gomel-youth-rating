@@ -2,76 +2,52 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Unbounded", "Manrope", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-counted: var(--counted);
-  --color-counted-foreground: var(--counted-foreground);
-  --color-ink: var(--ink);
-  --color-ink-foreground: var(--ink-foreground);
-}
-
+/* 1-в-1 со стилем республиканского неофициального рейтинга (kmkrnk.github.io/yunrating), светлая тема. */
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.975 0.008 85);
-  --foreground: oklch(0.22 0.02 250);
-  --card: oklch(0.995 0.003 85);
-  --card-foreground: oklch(0.22 0.02 250);
-  --popover: oklch(0.995 0.003 85);
-  --popover-foreground: oklch(0.22 0.02 250);
-  /* orienteering flag orange */
-  --primary: oklch(0.68 0.19 45);
-  --primary-foreground: oklch(0.99 0.005 85);
-  --secondary: oklch(0.93 0.015 85);
-  --secondary-foreground: oklch(0.22 0.02 250);
-  --muted: oklch(0.94 0.01 85);
-  --muted-foreground: oklch(0.5 0.02 250);
-  --accent: oklch(0.93 0.05 60);
-  --accent-foreground: oklch(0.3 0.08 45);
-  --destructive: oklch(0.58 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.88 0.015 85);
-  --input: oklch(0.88 0.015 85);
-  --ring: oklch(0.68 0.19 45);
-  --counted: oklch(0.92 0.07 60);
-  --counted-foreground: oklch(0.3 0.09 45);
-  --ink: oklch(0.24 0.03 250);
-  --ink-foreground: oklch(0.97 0.008 85);
+  color-scheme: light;
+  --background: #fff;
+  --foreground: #333;
+  --brand: #a60f19;
+  --warn-bg: #fff3cd;
+  --warn-fg: #5a0a0f;
+  --line: #ccc;
+  --stripe: #eef;
+  --hover: #ddd;
+  --muted-fg: #888;
+  --facts-fg: #444;
 }
 
-@layer base {
-  * {
-    border-color: var(--color-border);
-  }
-  body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans);
-  }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  color: var(--foreground);
+  background-color: var(--background);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+.wrap { max-width: 1200px; margin: 0 auto; padding-block: 20px 32px; }
+.crumbs { color: var(--brand); font-weight: bold; font-size: 14px; margin: 0 0 4px; }
+.facts { margin: 0 0 8px; padding-left: 18px; color: var(--facts-fg); font-size: 13px; line-height: 1.6; list-style: disc; }
+.facts .muted { color: var(--muted-fg); }
+.facts > li { margin-bottom: 2px; }
+@media (max-width: 600px) { .tag .wide { display: none; } }
+.facts .sub { list-style: none; margin: 2px 0 4px; padding-left: 0; }
+.facts .sub li { display: flex; gap: 8px; padding-left: 2px; }
+.facts .sub .d { flex: 0 0 auto; min-width: 64px; font-variant-numeric: tabular-nums; color: var(--brand); font-weight: bold; }
+.wrap a { text-decoration: underline; color: -webkit-link; }
+.wrap a:hover { text-decoration: none; }
+.unoff { border: 3px solid var(--brand); background: var(--warn-bg); color: var(--warn-fg); padding: 12px 14px; margin: 0 0 12px; font-size: 14px; line-height: 1.4; }
+.unoff strong { display: block; font-size: 20px; letter-spacing: .5px; color: var(--brand); margin-bottom: 4px; }
+.wrap .unoff a { color: var(--brand); font-weight: bold; }
+.tag { display: inline-block; margin-left: 8px; padding: 1px 6px; background: var(--brand); color: var(--background); font-size: 11px; font-weight: bold; vertical-align: 1px; }
+.rating h2 { color: var(--brand); font-size: 14px; font-weight: bold; margin: 1em 0; }
+.rating hr { margin: 8px 0; border: 0; border-top: 1px solid var(--line); }
+.scroller { overflow-x: auto; }
+.rating table { border-collapse: collapse; width: 100%; }
+.rating table th { padding: 2px; border: 1px solid var(--line); }
+.rating table td { text-align: center; padding: 2px; border: 1px solid var(--line); }
+.rating table td:nth-child(2) { text-align: left; padding: 2px 5px; border-right: 2px solid #000; white-space: nowrap; }
+.rating table tr.odd { background-color: var(--stripe); }
+.rating table tr:hover td { background-color: var(--hover); }
+.rating table td:nth-last-child(3) { font-weight: bold; border-left: 2px solid #000; }

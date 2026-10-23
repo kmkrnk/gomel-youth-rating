@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { BEST_COUNT, GROUPS, buildRating, stages, type Stage } from "@/lib/rating";
+import { BEST_COUNT, GROUPS, buildRating, stages } from "@/lib/rating";
+
+const POLOZHENIE = "https://ogomel.ucoz.net/index/rejting_gomelskoj_oblasti_mzh10_20/0-30";
+const TABLE =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSot8uIogmiq8UEG2Iq7B6pAry8gAgyPY8amfq_1-o621Duwk9RBCo7oVHxpoJ4w6VbrnMaTW4eT-We/pubhtml";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Юношеский рейтинг Гомельской области 2026 — ориентирование" },
-      { name: "description", content: "Неофициальный юношеский рейтинг Гомельской области по спортивному ориентированию, МЖ10–20, 2026 год." },
-      { property: "og:title", content: "Юношеский рейтинг Гомельской области 2026" },
-      { property: "og:description", content: "Рейтинг МЖ10–20 по ориентированию: очки по стартам и сумма 6 лучших." },
+      { title: "НЕОФИЦИАЛЬНЫЙ юношеский рейтинг Гомельской области 2026" },
+      { name: "description", content: "Неофициальный расчёт юношеского рейтинга Гомельской области по ориентированию, МЖ10–20, 2026." },
+      { property: "og:title", content: "НЕОФИЦИАЛЬНЫЙ юношеский рейтинг Гомельской области 2026" },
+      { property: "og:description", content: "Сумма 6 лучших стартов по Положению о рейтинге Гомельской области." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -17,122 +20,128 @@ export const Route = createFileRoute("/")({
 });
 
 const rating = buildRating();
-
-function StageHead({ s }: { s: Stage }) {
-  const label = (
-    <>
-      <div className="font-bold">{s.id}</div>
-      <div className="text-[10px] font-normal text-muted-foreground">{s.source === "upcoming" ? "впереди" : `кат. ${s.cat}`}</div>
-    </>
-  );
-  return (
-    <th title={`${s.title}${s.dist ? ", " + s.dist.toLowerCase() : ""}`} className="px-2 py-2 text-center">
-      {s.url ? <a href={s.url} target="_blank" rel="noreferrer" className="hover:text-primary">{label}</a> : label}
-    </th>
-  );
-}
+const held = stages.filter((s) => s.source !== "upcoming");
+const added = held.filter((s) => s.source === "protocol");
+const fmtD = (d: string) => d.slice(8, 10) + "." + d.slice(5, 7);
+const groupLabel = (g: string) => g.replace("М", "М").replace("Ж", "Ж");
 
 function Index() {
-  const [group, setGroup] = useState("М10");
-  const [q, setQ] = useState("");
-  const rows = useMemo(() => {
-    const n = q.trim().toLowerCase();
-    return (rating[group] ?? []).filter((r) => !n || r.name.toLowerCase().includes(n) || r.club.toLowerCase().includes(n));
-  }, [group, q]);
+  let stripe = 0;
+  const addedComps: { c: string; d: string[] }[] = [];
+  for (const s of added) {
+    const c = s.title.replace(/, день \d+$/, "");
+    let x = addedComps.find((y) => y.c === c);
+    if (!x) addedComps.push((x = { c, d: [] }));
+    if (s.date) x.d.push(s.date);
+  }
+  const span = (d: string[]) => {
+    const a = d[0], b = d[d.length - 1];
+    if (!a || !b) return "";
+    if (a === b) return fmtD(a);
+    return a.slice(5, 7) === b.slice(5, 7) ? `${a.slice(8, 10)}-${fmtD(b)}` : `${fmtD(a)}-${fmtD(b)}`;
+  };
+  const headCells = (
+    <>
+      <th>№</th>
+      <th>Прозвішча, Імя</th>
+      <th>ГН</th>
+      {held.map((s) => (
+        <th key={s.id} title={`${s.title}${s.dist ? ", " + s.dist.toLowerCase() : ""}`}>
+          {s.date ? fmtD(s.date) : s.id}
+        </th>
+      ))}
+      <th>Ачкі</th>
+      <th>Сярэдняе</th>
+      <th>Месца</th>
+    </>
+  );
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-ink text-ink-foreground">
-        <div className="mx-auto max-w-7xl px-4 py-8">
-          <div className="flex items-center gap-3">
-            <span className="inline-block h-8 w-8 rounded-sm bg-[linear-gradient(135deg,var(--card)_50%,var(--primary)_50%)]" />
-            <span className="text-sm uppercase tracking-widest opacity-70">Ориентирование · 2026</span>
-          </div>
-          <h1 className="mt-3 font-display text-2xl font-bold md:text-4xl">Юношеский рейтинг Гомельской области</h1>
-          <p className="mt-2 max-w-2xl text-sm opacity-80">
-            Группы МЖ10–20. Сумма {BEST_COUNT} лучших стартов. Категория А — до 500 очков, B и C — до 400.
-            Неофициальный подсчёт по положению.
-          </p>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6">
-        <div className="flex flex-wrap items-center gap-2">
-          {GROUPS.map((g) => (
-            <button
-              key={g}
-              onClick={() => setGroup(g)}
-              className={`rounded-md px-3 py-1.5 font-mono text-sm font-semibold transition-colors ${g === group ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"}`}
-            >
-              {g}
-            </button>
+    <div className="wrap">
+      <div className="unoff" role="note">
+        <strong>⚠ НЕОФИЦИАЛЬНЫЙ РАСЧЁТ</strong>
+        Это не официальный рейтинг Гомельской области. Таблица посчитана частным образом по опубликованным протоколам,
+        чтобы видеть картину сразу после стартов; возможны ошибки. Официальный рейтинг — только у организаторов:{" "}
+        <a href={TABLE} target="_blank" rel="noopener">таблица рейтинга Гомельской области</a> ·{" "}
+        <a href={POLOZHENIE} target="_blank" rel="noopener">Положение о юношеском рейтинге Гомельской области 2026</a>.
+      </div>
+      <p className="crumbs">Юношеский рейтинг Гомельской области 2026 · неофициальный расчёт</p>
+      <ul className="facts">
+        <li>
+          <b>Основа:</b> <a href={TABLE} target="_blank" rel="noopener">таблица рейтинга Гомельской области</a> (Лесная лига 3–4, Первенство области 1–3), без изменений
+        </li>
+        <li>
+          <b>Добавлено:</b>
+          <ul className="sub">
+            {addedComps.map((x) => (
+              <li key={x.c}><span className="d">{span(x.d)}</span><span>{x.c}</span></li>
+            ))}
+          </ul>
+        </li>
+        <li>
+          <b>Впереди:</b>
+          <ul className="sub"><li><span className="d">—</span>Спринт-тур 2026, этапы 1–4</li></ul>
+        </li>
+        <li>
+          <b>Ачкі</b> — сумма <b>{BEST_COUNT}</b> лучших результатов <span className="muted">(категория А — до 500, B и C — до 400)</span>
+        </li>
+        <li>
+          <b>Правила:</b> строго по <a href={POLOZHENIE} target="_blank" rel="noopener">Положению о юношеском рейтинге Гомельской области 2026</a>
+        </li>
+      </ul>
+      <div className="rating">
+        <hr />
+        <span>
+          {GROUPS.map((g, i) => (
+            <span key={g}>
+              {i > 0 && " | "}
+              <a href={`#list${i}`} title={`Перейти к ${g}`}>{groupLabel(g)}</a>
+            </span>
           ))}
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Поиск по фамилии или команде"
-            className="ml-auto w-full rounded-md border border-input bg-card px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-72"
-          />
-        </div>
-
-        <div className="mt-4 overflow-x-auto rounded-lg border bg-card">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted text-left text-xs">
-              <tr>
-                <th className="px-3 py-2">№</th>
-                <th className="px-3 py-2">Фамилия, имя</th>
-                <th className="px-3 py-2">Команда</th>
-                <th className="px-2 py-2">Г.р.</th>
-                {stages.map((s) => <StageHead key={s.id} s={s} />)}
-                <th className="px-3 py-2 text-right">Сумма</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.name} className="border-b last:border-0 hover:bg-muted/50">
-                  <td className="px-3 py-2 font-mono font-semibold">{r.place}</td>
-                  <td className="whitespace-nowrap px-3 py-2 font-semibold">{r.name}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{r.club}</td>
-                  <td className="px-2 py-2 font-mono">{r.year}</td>
-                  {stages.map((s) => {
-                    const v = r.cells[s.id];
-                    const counted = r.counted.has(s.id) && typeof v === "number" && v > 0;
-                    return (
-                      <td key={s.id} className="px-1 py-1 text-center font-mono">
-                        {v == null ? (
-                          <span className="text-muted-foreground/50">·</span>
-                        ) : (
-                          <span className={`inline-block min-w-10 rounded px-1.5 py-0.5 ${counted ? "bg-counted font-semibold text-counted-foreground" : typeof v === "number" ? "" : "text-xs text-destructive"}`}>
-                            {v}
-                          </span>
-                        )}
-                      </td>
-                    );
-                  })}
-                  <td className="px-3 py-2 text-right font-mono text-base font-bold">{r.total}</td>
-                </tr>
-              ))}
-              {!rows.length && (
-                <tr><td colSpan={5 + stages.length} className="px-3 py-8 text-center text-muted-foreground">Никого не нашли</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <section className="mt-6 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-          {stages.map((s) => (
-            <div key={s.id}>
-              <span className="font-mono font-semibold text-foreground">{s.id}</span> — {s.title}
-              {s.dist ? `, ${s.dist.toLowerCase()}` : ""} · кат. {s.cat}
-              {s.source === "upcoming" ? " · ещё не проведён" : ""}
+        </span>
+        <hr />
+        {GROUPS.map((g, gi) => {
+          const rows = rating[g] ?? [];
+          return (
+            <div key={g}>
+              <a id={`list${gi}`} />
+              <h2>
+                {g} <span className="tag">НЕОФИЦИАЛЬНЫЙ РАСЧЁТ<span className="wide"> · официальный рейтинг — у организаторов</span></span>
+              </h2>
+              <div className="scroller">
+                <table>
+                  <thead>
+                    <tr className={stripe++ % 2 ? "odd" : ""}>
+                      {headCells}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((r, i) => {
+                      const best = [...r.counted].map((k) => r.cells[k]).filter((v): v is number => typeof v === "number");
+                      const nz = best.filter((v) => v > 0).length;
+                      const avg = nz ? Math.round(r.total / nz) : 0;
+                      return (
+                        <tr key={r.name} className={stripe++ % 2 ? "odd" : ""}>
+                          <td>{i + 1}</td>
+                          <td>{r.name}</td>
+                          <td>{r.year}</td>
+                          {held.map((s) => {
+                            const v = r.cells[s.id];
+                            return <td key={s.id}>{v == null ? "" : r.counted.has(s.id) ? <b>{v}</b> : v}</td>;
+                          })}
+                          <td>{r.total}</td>
+                          <td>{avg}</td>
+                          <td>{i + 1}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          ))}
-          <p className="sm:col-span-2 mt-2">
-            Выделены зачётные старты. Очки = максимум × (2 × время победителя / время участника − 1), не меньше 0.
-            МЖ18 получают очки и в группах 20, 21; МЖ20 — в 21.
-          </p>
-        </section>
-      </main>
+          );
+        })}
+      </div>
     </div>
   );
 }
