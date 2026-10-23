@@ -57,25 +57,5 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Turn on GitHub Pages (workflow builds)
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            try {
-              await github.rest.repos.createPagesSite({ owner, repo, build_type: "workflow" });
-            } catch (e) {
-              if (e.status !== 409 && e.status !== 422) throw e;
-              try {
-                await github.rest.repos.updateInformationAboutPagesSite({
-                  owner,
-                  repo,
-                  build_type: "workflow",
-                });
-              } catch (e2) {
-                core.warning("Pages already on; build type left as is: " + e2.message);
-              }
-            }
-
       - id: deployment
         uses: actions/deploy-pages@v4
