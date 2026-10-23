@@ -100,24 +100,14 @@ export function buildRating() {
       if (!times.length) continue;
       const winner = Math.min(...times);
       for (const r of rows) {
-        if (!r.gomel) continue;
+        // Only athletes already in the regional table count; nobody new is added.
         const key = norm(r.name);
-        let g = groupOf.get(key);
-        if (!g) {
-          const age = ratingAge(r.year);
-          if (age == null) continue;
-          g = `${ran.sex}${age}`;
-        }
+        const g = groupOf.get(key);
+        if (!g) continue;
         const ga = parseGroup(g)!;
         if (ga.sex !== ran.sex || !eligible(ga.age, ran.age)) continue;
-        const gm = groups[g];
-        if (!gm) continue;
-        let row = gm.get(key);
-        if (!row) {
-          row = { name: r.name, club: r.club, year: r.year, qual: "", cells: {} };
-          gm.set(key, row);
-          groupOf.set(key, g);
-        }
+        const row = groups[g]?.get(key);
+        if (!row) continue;
         const pts = stagePoints(st.cat as Category, winner, r.sec);
         const prev = row.cells[st.id];
         row.cells[st.id] = typeof prev === "number" ? Math.max(prev, pts) : pts;
