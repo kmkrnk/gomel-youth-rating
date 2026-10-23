@@ -96,7 +96,7 @@ function Index() {
                   <td className="px-2 py-2 font-mono">{r.year}</td>
                   {stages.map((s) => {
                     const v = r.cells[s.id];
-                    const counted = r.counted.has(s.id);
+                    const counted = r.counted.has(s.id) && typeof v === "number" && v > 0;
                     return (
                       <td key={s.id} className="px-1 py-1 text-center font-mono">
                         {v == null ? (
