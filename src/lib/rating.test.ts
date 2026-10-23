@@ -37,3 +37,10 @@ describe("областной рейтинг", () => {
     expect(typeof r.cells["ЗО1"]).toBe("number");
   });
 });
+
+describe("состав рейтинга", () => {
+  it("в рейтинге только люди из таблицы — никого нового", () => {
+    const total = Object.values(buildRating()).reduce((s, rows) => s + rows.length, 0);
+    expect(total).toBe(69);
+  });
+});
