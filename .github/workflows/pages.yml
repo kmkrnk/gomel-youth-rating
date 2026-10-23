@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Deploy only from the repository's default branch (the branch Lovable syncs).
+    if: github.ref == 'refs/heads/' + github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Site base path
+        id: base
+        run: |
+          repo="${{ github.event.repository.name }}"
+          owner="${{ github.repository_owner }}"
+          if [ "$repo" = "$owner.github.io" ]; then
+            echo "base=/" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=/$repo/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run test
+
+      - name: Build static site
+        run: bun run build
+        env:
+          GOMEL_PAGES: "1"
+          GOMEL_BASE: ${{ steps.base.outputs.base }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Turn on GitHub Pages (workflow builds)
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            try {
+              await github.rest.repos.createPagesSite({ owner, repo, build_type: "workflow" });
+            } catch (e) {
+              if (e.status !== 409 && e.status !== 422) throw e;
+              try {
+                await github.rest.repos.updateInformationAboutPagesSite({
+                  owner,
+                  repo,
+                  build_type: "workflow",
+                });
+              } catch (e2) {
+                core.warning("Pages already on; build type left as is: " + e2.message);
+              }
+            }
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
