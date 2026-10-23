@@ -112,7 +112,7 @@ function Index() {
                 <table>
                   <thead>
                     <tr className={stripe++ % 2 ? "odd" : ""}>
-                      {head.props.children.props.children}
+                      {headCells}
                     </tr>
                   </thead>
                   <tbody>
