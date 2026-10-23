@@ -33,7 +33,7 @@ describe("областной рейтинг", () => {
     expect(eligible(14, 14)).toBe(true);
   });
   it("Степаняк Анна получила очки за Золотую осень", () => {
-    const r = buildRating()["Ж10"].find((x) => x.name === "Степаняк Анна")!;
+    const r = (buildRating()["Ж10"] ?? []).find((x) => x.name === "Степаняк Анна")!;
     expect(typeof r.cells["ЗО1"]).toBe("number");
   });
 });

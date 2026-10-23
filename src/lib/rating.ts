@@ -86,7 +86,7 @@ export function buildRating() {
   for (const a of data.athletes) {
     const cells: Record<string, Cell> = {};
     for (const [k, v] of Object.entries(a.points)) cells[k] = v as Cell;
-    groups[a.group].set(norm(a.name), { name: a.name, club: a.club, year: a.year, qual: a.qual, cells });
+    groups[a.group]?.set(norm(a.name), { name: a.name, club: a.club, year: a.year, qual: a.qual, cells });
     groupOf.set(norm(a.name), a.group);
   }
 
