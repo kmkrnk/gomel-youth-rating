@@ -37,7 +37,7 @@ function Index() {
   const [q, setQ] = useState("");
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase();
-    return rating[group].filter((r) => !n || r.name.toLowerCase().includes(n) || r.club.toLowerCase().includes(n));
+    return (rating[group] ?? []).filter((r) => !n || r.name.toLowerCase().includes(n) || r.club.toLowerCase().includes(n));
   }, [group, q]);
 
   return (

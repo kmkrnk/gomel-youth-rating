@@ -110,10 +110,12 @@ export function buildRating() {
         }
         const ga = parseGroup(g)!;
         if (ga.sex !== ran.sex || !eligible(ga.age, ran.age)) continue;
-        let row = groups[g].get(key);
+        const gm = groups[g];
+        if (!gm) continue;
+        let row = gm.get(key);
         if (!row) {
           row = { name: r.name, club: r.club, year: r.year, qual: "", cells: {} };
-          groups[g].set(key, row);
+          gm.set(key, row);
           groupOf.set(key, g);
         }
         const pts = stagePoints(st.cat as Category, winner, r.sec);
@@ -125,9 +127,12 @@ export function buildRating() {
 
   const result: Record<string, Row[]> = {};
   for (const g of GROUPS) {
-    const rows = [...groups[g].values()].map((r) => ({ ...r, ...bestTotal(r.cells), place: 0 }));
+    const rows: Row[] = [...(groups[g]?.values() ?? [])].map((r) => ({ ...r, ...bestTotal(r.cells), place: 0 }));
     rows.sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, "ru"));
-    rows.forEach((r, i) => (r.place = i > 0 && rows[i - 1].total === r.total ? rows[i - 1].place : i + 1));
+    rows.forEach((r, i) => {
+      const p = rows[i - 1];
+      r.place = p && p.total === r.total ? p.place : i + 1;
+    });
     result[g] = rows;
   }
   return result;
